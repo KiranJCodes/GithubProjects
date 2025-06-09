@@ -9,7 +9,7 @@ A comprehensive analysis of salary trends using Power BI, examining:
 - Experience-to-salary relationships
 - Predictive modeling insights
 
-**Final Report:** [Salary Analysis - Final Report](Salary Analysis - Final Report.pdf)
+**Final Report:** [Salary Analysis - Final Report](https://github.com/KiranJCodes/GithubProjects/blob/main/Salary%20Prediction/Salary%20Analysis.pdf)
 
 ## 🎯 Key Insights (from Power BI Analysis)
 ### 🧑‍🎓 Education Impact
@@ -39,7 +39,7 @@ A comprehensive analysis of salary trends using Power BI, examining:
 **Dataset:**
 - 6,699 records from Kaggle
 - Fields: Age, Gender, Education, Job Title, Experience, Salary
-- [Dataset Link] (https://www.kaggle.com/datasets/thedevastator/jobs-dataset-from-glassdoor)
+- [Dataset Link](https://www.kaggle.com/datasets/thedevastator/jobs-dataset-from-glassdoor)
 
 ## 📂 Dashboard Components
 1. **Demographic Overview**
