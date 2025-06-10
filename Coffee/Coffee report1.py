@@ -36,56 +36,67 @@ plt.xlabel('Total Production (units in Billions)')
 plt.ylabel('Country')
 plt.show()
 
-# 1b
 
-last10years = production.iloc[0:,-12:-2]
-last10years = production[['Country'] + list(last10years)] 
+# New 1b
 
-top10latest = last10years.groupby('Country').sum().sum(axis=1)
-top10latest = top10latest.sort_values(ascending=False).head(10)
-top10latest = top10latest.reset_index(name='total_production_recent')
+relevant_year_cols = production.iloc[:, 2:-2].columns.tolist()
 
+# Get the last 5 years
+last_5_years_cols = relevant_year_cols[-5:]
+    
+    # Get the 5 years immediately preceding the last 5
+previous_5_years_cols = relevant_year_cols[-10:-5]
 
-plt.figure(figsize=(12,6))
-sns.barplot(x=top10latest['total_production_recent'] / 1_000_000_000,
-            y=top10latest["Country"], palette='viridis')
-plt.title('Top 10 Coffee Producers (Last 10 years)')
-plt.xlabel('Total Production (units in Billions)')
-plt.ylabel('Country')
-plt.show()
+print(f"\nLast 5 years columns: {last_5_years_cols}")
+print(f"Previous 5 years columns: {previous_5_years_cols}")
 
-## see gainers and loosers 
-
-combined = pd.merge(
-    Sorttotal.reset_index(), 
-    top10latest.reset_index(), 
-    on='Country', 
-    suffixes=('_alltime', '_recent')
-)
+    # --- Calculate the change in average production ---
+production['Avg_Last_5_Years'] = production[last_5_years_cols].mean(axis=1)
 
 
-combined['change'] = combined['total_production_recent'] - combined['Total_production']
-combined['pct_change'] = (combined['change'] / combined['Total_production']) * 100
-
-top_gainers = combined.sort_values('change', ascending=False).head(5)
-
-top_losers = combined.sort_values('change').head(5)
+production['Avg_Previous_5_Years'] = production[previous_5_years_cols].mean(axis=1)
 
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+production['Avg_Production_Change'] = production['Avg_Last_5_Years'] - production['Avg_Previous_5_Years']
 
-# Top Gainers
-sns.barplot(data=top_gainers, x='change', y='Country', ax=ax1, palette='Greens')
-ax1.set_title('Top 5 Gainers (Recent vs All-Time)')
-ax1.set_xlabel('Production Increase (kg)')
+    # --- Identify countries with increased and decreased production ---
+increased_production = production[production['Avg_Production_Change'] > 0].sort_values('Avg_Production_Change', ascending=False)
+decreased_production = production[production['Avg_Production_Change'] < 0].sort_values('Avg_Production_Change', ascending=True)
 
-# Top Losers
-sns.barplot(data=top_losers, x='change', y='Country', ax=ax2, palette='Reds')
-ax2.set_title('Top 5 Losers (Recent vs All-Time)')
-ax2.set_xlabel('Production Decrease (kg)')
+print("\n--- Top 5 Countries with Increased Average Production in Last 5 Years ---")
+print(increased_production[['Country', 'Avg_Production_Change']].head(5))
+
+print("\n--- Top 5 Countries with Decreased Average Production in Last 5 Years ---")
+print(decreased_production[['Country', 'Avg_Production_Change']].head(5))
+
+
+# --- Plotting the top 5 for each category ---
+
+    # Plot for Increased Production
+fig, axes = plt.subplots(1, 2, figsize=(18, 7), sharey=False)
+sns.barplot(
+        data=increased_production.head(5),
+        x=increased_production['Avg_Production_Change'] / 1_000_000,
+        y='Country',
+        palette='Greens_d',
+        ax=axes[0])
+axes[0].set_title('Top 5 Countries with Increased Avg Production')
+axes[0].set_xlabel('Change in Avg Production (Millions of Units)')
+axes[0].set_ylabel('Country')
+
+
+    # Plot for Decreased Production
+plt.figure(figsize=(12, 6))
+sns.barplot(
+        data=decreased_production.head(5),
+        x=decreased_production['Avg_Production_Change']/ 1_000_000,
+        y='Country',
+        palette='Reds_d',
+        ax=axes[1]
+    )
+axes[1].set_title('Top 5 Countries with Decreased Avg Production')
+axes[1].set_xlabel('Change in Avg Production (Millions of Units)')
+axes[1].set_ylabel('Country')
 
 plt.tight_layout()
 plt.show()
-
-
-## end of task1 
