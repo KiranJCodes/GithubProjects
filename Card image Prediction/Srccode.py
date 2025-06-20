@@ -9,30 +9,34 @@ import kagglehub
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import tensorflow as tf 
+import numpy as np
+
 # Download latest version
 path = kagglehub.dataset_download("gpiosenka/cards-image-datasetclassification")
 
 print("Path to dataset files:", path)
 
 data = pd.read_csv(path+r"/cards.csv")
+data['filepaths'] = data['filepaths'].str.replace(r'/', r'\\', regex=True)
+data = data[data['filepaths'].str.contains('.jpg', case=False, regex=False)]
 
 le = LabelEncoder()
 # Create TensorFlow dataset from DataFrame  
 def load_and_preprocess(fpath, label): 
-    fpath = path+"\\"+fpath
-    fpath.replace("/","\\",-1)
-    print(fpath)
-    
+    fpath = path + "\\" + fpath
     img = tf.io.read_file(fpath)  
     img = tf.image.decode_jpeg(img, channels=3)  
     img = tf.image.resize(img, [224, 224])  # Resize for CNNs  
+    img = img / 255.0
     return img, label
 
 # Filter train data
 
-check = load_and_preprocess(r"train/ace of clubs/001.jpg","ace of clubs")
-x= check[-1]
-x.replace("/","\\",-1)
+
+# Debug location!
+check = load_and_preprocess("train/ace of clubs/001.jpg","ace of clubs")
+x= check
+# end of degub
 
 def Filterdata(DS,subset):
     Filtered = DS[DS['data set']== subset]
@@ -60,23 +64,19 @@ for images, labels in trainds.take(1):
     
     
 num_classes = len(le.classes_)    
-model = tf.keras.Sequential([
-    tf.keras.layers.Rescaling(1./255),  # Normalize pixel values
-    tf.keras.layers.Conv2D(32, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(64, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(num_classes)  
-])
 
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Flatten(input_shape=(224, 224, 3)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(num_classes, activation='softmax')
+])
 
 model.compile(
     optimizer='adam',
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
-)
+    )
 
 history = model.fit(
     trainds,
@@ -85,8 +85,12 @@ history = model.fit(
 )
 
 
-sample_batch = next(iter(trainds))
-print("Image batch shape:", sample_batch[0].shape)
-print("Image dtype:", sample_batch[0].dtype)
-print("Label batch shape:", sample_batch[1].shape)
-print("Label dtype:", sample_batch[1].dtype)
+# Check your data loading
+for images, labels in trainds.take(1):
+    print("Image stats - Min:", tf.reduce_min(images).numpy(), 
+          "Max:", tf.reduce_max(images).numpy(), 
+          "Mean:", tf.reduce_mean(images).numpy())
+    print("Unique labels:", np.unique(labels.numpy()))
+    
+    # Check ALL labels in training set
+print("Label counts:\n", traindata['label_encoded'].value_counts())
