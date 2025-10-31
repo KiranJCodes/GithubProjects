@@ -73,22 +73,27 @@ for images, labels in trainds.take(1):
 num_classes = len(le.classes_)    
 
 
-base_model = tf.keras.applications.MobileNetV2(
-    input_shape=(128, 128, 3),
-    include_top=False,
-    weights='imagenet',
-    alpha=0.35  # Extra-lightweight (35% of original size)
-)
-base_model.trainable = False  # Freeze pretrained layers
-
 model = tf.keras.Sequential([
-    tf.keras.layers.Rescaling(1./127.5, offset=-1),  # MobileNet expects [-1,1]
-    base_model,
-    tf.keras.layers.GlobalAveragePooling2D(),
-    tf.keras.layers.Dense(128, activation='relu'),
+    
+    tf.keras.layers.RandomFlip("horizontal"),
+    tf.keras.layers.RandomRotation(0.05),  # Reduced from 0.1
+    
+    # Efficient CNN
+    tf.keras.layers.Conv2D(16, (5,5), strides=2, activation='relu', padding='same'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.MaxPooling2D(2),
+    
+    tf.keras.layers.Conv2D(32, (3,3), activation='relu', padding='same'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.MaxPooling2D(2),
+    
+    tf.keras.layers.Conv2D(64, (3,3), activation='relu', padding='same'),
+    tf.keras.layers.GlobalAveragePooling2D(),  # Replaces Flatten + Dense
+    
+    # Slim classifier
+    tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.Dense(num_classes, activation='softmax')
 ])
-
 
 model.compile(
     optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),  # Better for CPU
