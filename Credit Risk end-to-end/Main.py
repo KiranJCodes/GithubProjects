@@ -66,11 +66,45 @@ sns.heatmap(corr, annot=True,cmap='coolwarm',fmt=".2f")
 plt.show()
 
 
+
 df.groupby('Job')['Credit amount'].mean()
 
 df.groupby('Sex')['Credit amount'].mean()
 
+pd.pivot_table(df,values='Credit amount', index = "Housing",
+               columns = 'Purpose')
 
+sns.scatterplot(data = df,x="Age", y ="Credit amount",
+                hue = 'Sex', size="Duration",alpha=0.7)
+plt.title("Credit amount against Age colored by Sex and sized by Duration")
+plt.show()
+
+
+sns.violinplot(data = df,x = "Saving accounts", y = "Credit amount",palette="deep")
+plt.title("Credit amount Distrubtion against savings")
+plt.show()
+
+df["Risk"].value_counts(normalize=True) * 100
+
+
+plt.figure(figsize=(8,4))
+for i,col in enumerate(['Age','Credit amount','Duration']):
+    plt.subplot(1,3,i+1)
+    sns.boxplot(data = df, x ="Risk", y = col,palette="deep")
+    plt.title(f"{col} by Risk")
+
+df.groupby("Risk")[['Age',"Credit amount","Duration"]].mean()
+
+
+plt.figure(figsize=(10,8))
+for i,col in enumerate(cols):
+    plt.subplot(3,3,i+1)
+    sns.countplot(data = df,x = col, hue="Risk",palette="Set2",
+                  order=df[col].value_counts().index)
+    plt.title(f"{col} by Risk")
+    plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
 
 ## Make sure all are number format for ML models. 
 df.dtypes
