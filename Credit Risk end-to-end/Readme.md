@@ -1,4 +1,4 @@
-```markdown
+
 # German Credit Risk Analysis - End to End Project
 
 A comprehensive machine learning project for credit risk assessment using German credit data. This project covers the full data science pipeline from EDA to model deployment.
@@ -17,14 +17,14 @@ Predict credit risk (good/bad) based on customer demographic and financial infor
 
 ## 📁 Project Structure
 
-```
+
 Credit-Risk-end-to-end/
 ├── Main.py                    # Main analysis script
 ├── app.py                     # Streamlit web interface
 ├── XGB_Classifier_model.pkl   # Trained model
 ├── *_encoder.pkl              # Label encoders for categorical features
 └── README.md
-```
+
 
 ## 🔧 Installation
 
