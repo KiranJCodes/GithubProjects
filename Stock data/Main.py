@@ -5,26 +5,7 @@ Created on Wed Dec  3 01:01:48 2025
 
 @author: daydreamer
 """
-'''
-import requests
-import pandas as pd
 
-
-baseurl = 'https://stock.indianapi.in'
-
-apikey = 'St0cksAp!'
-
-headers = {
-    "accept": "application/json",
-    "X-API-Key": apikey
-}
-
-symbol = "TCS"
-quote_url = f"{baseurl}/stock/quote/{symbol}"
-quote_response = requests.get(quote_url, headers=headers)
-quote_data = quote_response.json()
-        
-'''
 
 import http.client
 import json
@@ -34,15 +15,19 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
+import psycopg2
+
 load_dotenv() 
 apikey = os.getenv('API_KEY')
 
+'''
 
-
+https://indianapi.in/indian-stock-market
+'''
 
 def getStockof(Stock_name,market):
     conn = http.client.HTTPSConnection("stock.indianapi.in")
-    headers = { 'X-Api-Key': "sk-live-6ZxoAaoKaXIXhLxOUyajwFsOylISnlTgZkaiKFhO" }
+    headers = { 'X-Api-Key': apikey }
     conn.request("GET", "/stock?name="+Stock_name, headers=headers)
 
     res = conn.getresponse()
@@ -59,11 +44,60 @@ def getStockof(Stock_name,market):
     # date
     date = filterdata['stockDetailsReusableData']['date']
     sqldate = datetime.strptime(date, '%d %b %Y').strftime('%Y-%m-%d')
-    print(f"DATE: {sqldate}")
+
     
     #closing price
     closing= filterdata['stockDetailsReusableData']['close']
     
     return name,price,sqldate,closing
 
-n,p,d,c = getStockof("APEX", "NSE")
+def test():
+    
+    n,p,d,c = getStockof("RBLBANK","NSE")
+    print(f"Company name: {n}")
+    print(f"price: {p}")
+    print(f"Date: {d}")
+    print(f"Closing price: {c}")
+
+
+## create 10 watchlists
+
+WL = [ ("APEX", "NSE"), ("SUZLON", "NSE"),
+            ("CANBK","NSE"), ("TATASTEEL",'NSE'),
+            ("BHEL","NSE"), ("ENGINERSIN","NSE"),
+            ("RBLBANK","NSE"),("WIPRO","NSE"),
+            ("ETERNAL","NSE"),("WELSPUNLIV","NSE")
+            ]
+
+
+## Get listed details for every watchlist stock 
+def updatePrices():
+    SQ = []
+    for w in WL:
+    
+        n,p,d,c = getStockof(w[0],w[1])
+        x = (n,p,d,c)
+        SQLpush.append(x)
+    return SQ
+
+SQLpush = updatePrices()  
+
+
+for stock in SQLpush:
+    print("+-"*25)
+        
+    print(f"Company name: {stock[0]}")
+    print(f"price: {stock[1]}")
+    print(f"Date: {stock[2]}")
+    print(f"Closing price: {stock[3]}")
+
+
+# establish connection
+
+conn = psycopg2.connect(
+    host=os.getenv('DB_HOST'),
+    port=os.getenv('DB_PORT'),
+    database=os.getenv('DB_NAME'),
+    user=os.getenv('DB_USER'),
+    password=os.getenv('DB_PASSWORD')
+)
