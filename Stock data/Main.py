@@ -10,7 +10,7 @@ Created on Wed Dec  3 01:01:48 2025
 import http.client
 import json
 from datetime import datetime
-
+import time
 
 import os
 from dotenv import load_dotenv
@@ -29,6 +29,7 @@ def getStockof(Stock_name,market):
     conn = http.client.HTTPSConnection("stock.indianapi.in")
     headers = { 'X-Api-Key': apikey }
     conn.request("GET", "/stock?name="+Stock_name, headers=headers)
+    print("-_"*25)
     print(f"Fetching {Stock_name}")
     res = conn.getresponse()
     data = res.read()
@@ -49,6 +50,7 @@ def getStockof(Stock_name,market):
     #closing price
     closing= filterdata['stockDetailsReusableData']['close']
     print(f"{Stock_name} fetch completed")
+    print("-."*25)
     return name,price,sqldate,closing
 
 ## currently not used. keeping it here to test new stocks
@@ -84,7 +86,7 @@ STEP1:
 def updatePrices():
     SQ = []
     for w in WL:
-    
+        print(f"Stock {WL.index(w) + 1} / 10")
         n,p,d,c = getStockof(w[0],w[1])
         x = (n,p,d,c)
         SQ.append(x)
@@ -146,12 +148,23 @@ def InsertSQL():
             return False
         finally:
             conn.close()  
-            
-if __name__ == "__main__":
-    SQLpush = updatePrices()  
-    InsertSQL()
+
+
+SQLpush = []
+
+# running from DAG
+def main():
+    global SQLpush
+    start_time = time.time()
+    SQLpush = updatePrices()
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"⏱️ Loop executed in {execution_time:.2f} seconds")
     
-if __name__ == "__main__":
-    print("This will run when you execute: python Main.py")
-else:
-    print("This will run when Main.py is imported")
+    start_time = time.time()
+    InsertSQL()
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"⏱️ Updated to SQL in {execution_time:.2f} seconds")
+    
+    
