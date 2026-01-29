@@ -174,25 +174,25 @@ The pipeline monitors these 10 NSE stocks:
 
 ### **Airflow DAG Visualization**
 
-![[Pasted image 20260113201617.png]]
+![Airflow DAG Graph](Images/AirflowDag.png)
 *Caption: Airflow DAG execution graph showing successful daily runs of the stock pipeline.*
 
 ---
 
 ### **Database Records**
-![[Pasted image 20260113202157.png]]
+![Database Table](Images/Database.png)
 *Caption: PostgreSQL table showing historical stock prices collected by the pipeline.*
 
 ---
 
 ### **Execution Logs**
-![[Pasted image 20260113201725.png]]
+![Execution Logs](Images/ExecutionLogs.png)
 *Caption: Performance metrics showing API fetch and database insert execution times.*
 
 ---
 
 ### **Error Handling Example**
-![[Pasted image 20260113201830.png]]
+![Error Handling](Images/ErrorHandling.png)
 *Caption: Pipeline demonstrating robust error handling during API failures or database issues.*
 
 ---
