@@ -1,6 +1,3 @@
-I'll help you create professional documentation for this stock price pipeline project, designed for your portfolio with spaces for screenshots.
-
----
 
 # **Daily Stock Market Pipeline**
 
