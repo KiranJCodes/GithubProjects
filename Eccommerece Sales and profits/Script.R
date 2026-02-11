@@ -76,9 +76,92 @@ ggplot(MStop, aes(x = month, y = totalSold, fill = `Product Name`)) +
 unique_products <- unique(df$`Product Name`)
 print(unique_products)
 
-# Count of each product
+#  2a Count of each product
 productcounts <- df %>%
   count(`Product Name`, sort = TRUE)
 print(productcounts)
 
 
+#  2b Most Profitable products
+ProfitSum <- df %>%
+  group_by(`Product Name`) %>%
+  summarise(MP = sum(Profit, na.rm = TRUE)) %>%
+  arrange(desc(MP))
+
+ggplot(ProfitSum, aes(x = `Product Name`, y = MP)) + 
+  geom_col(fill = 'black') + 
+  geom_text(aes(label = `Product Name`), angle = 90, hjust = 1.1, size = 3, color = 'yellow') +
+  labs(title = "Most Profitable Products", x = 'Name', y = 'Sales') +
+  theme_minimal()
+
+# 3 Different product categories
+
+ggplot(df, aes(x = Category, y = Sales, fill = Category)) +
+  geom_boxplot() +
+  labs(title = "Profit Distribution by Sales")
+
+# 3a most sold category in each region
+Region <- df %>%
+  group_by(`Region`,`Category`) %>%
+  summarise(RegSale = sum(Sales,na.rm = TRUE)) %>%
+  arrange(Region)
+
+topcat <- Region %>%
+  group_by(Region) %>%
+  slice_max(RegSale, n = 1)
+
+print(topcat)
+
+
+# 4 find average order quantity
+
+ggplot(df, aes(x = Quantity)) +
+  geom_density(fill = "steelblue", alpha = 0.6) +
+  labs(title = "Density of Order Quantities", x = "Quantity", y = "Density") +
+  theme_minimal()
+
+
+# 5 most sold product of  all time
+
+AlltimeSold <- df %>%
+  group_by(`Product Name`) %>%
+  summarise(ATS = sum(Quantity, na.rm = TRUE)) %>%
+  arrange(desc(ATS))
+
+print(head(AlltimeSold,3))
+
+# 5a its % of sales 
+AlltimeSold <- AlltimeSold %>%
+  mutate(sales_pct = ATS / sum(ATS) * 100)
+
+
+# 5b Its % of profit
+
+product_profit <- df %>%
+  group_by(`Product Name`) %>%
+  summarise(total_profit = sum(Profit, na.rm = TRUE))
+
+
+AlltimeSold <- AlltimeSold %>%
+  left_join(product_profit, by = "Product Name") %>%
+  mutate(profit_pct = total_profit / sum(total_profit, na.rm = TRUE) * 100)
+
+print(head(AlltimeSold, 5))
+
+
+
+# 6 profit Category by Region and Month
+
+df %>% 
+  group_by(Category, Region) %>% 
+  summarise(profit = sum(Profit)) %>% 
+  ggplot(aes(Category, Region, fill = profit)) + 
+  geom_tile()
+
+# 6a profit Product by Region and Month
+
+df %>% 
+  group_by(`Product Name`, Region) %>% 
+  summarise(profit = sum(Profit)) %>% 
+  ggplot(aes(`Product Name`, Region, fill = profit)) + 
+  geom_tile()
